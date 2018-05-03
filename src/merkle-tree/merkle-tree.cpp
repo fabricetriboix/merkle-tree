@@ -1,3 +1,10 @@
 #include "merkle-tree/merkle-tree.hpp"
 
-int TODO = 0;
+MerkleTree::MerkleTree(const std::list<Buffer>& elements, bool preserveOrder)
+    : dummy_(0)
+{
+}
+
+MerkleTree::~MerkleTree()
+{
+}
