@@ -1,5 +1,6 @@
 #include "merkle-tree/merkle-tree.hpp"
 #include <sstream>
+#include <iomanip>
 #include <algorithm>
 
 MerkleTree::MerkleTree(const Elements& elements, bool preserveOrder)
@@ -66,6 +67,19 @@ MerkleTree::Elements MerkleTree::getProof(const Buffer& element) const
         throw std::runtime_error("Element not found");
     }
     return getProof(index);
+}
+
+std::string MerkleTree::getProofHex(const Buffer& element) const
+{
+    Elements proof = getProof(element);
+    std::ostringstream oss;
+    oss << "0x";
+    for (   Buffer::const_iterator it = element.begin();
+            it < element.end();
+            ++it) {
+        oss << std::setw(2) << std::setfill('0') << std::hex << *it;
+    }
+    return oss.str();
 }
 
 void MerkleTree::getLayers()

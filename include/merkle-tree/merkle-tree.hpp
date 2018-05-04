@@ -7,6 +7,7 @@ extern "C" {
 
 #include <vector>
 #include <deque>
+#include <string>
 #include <stdexcept>
 
 /** Size of a hash, in bytes
@@ -72,6 +73,11 @@ public :
      *        the Merkle Tree
      */
     Elements getProof(const Buffer& element) const;
+
+    /** Get proof in string form
+     *
+     */
+    std::string getProofHex(const Buffer& element) const;
 
     // XXX getProofOrdered(XXX element, XXX hex) const;
 
