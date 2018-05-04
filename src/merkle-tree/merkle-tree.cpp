@@ -53,6 +53,21 @@ MerkleTree::Buffer MerkleTree::hash(const Buffer& data)
     return result;
 }
 
+MerkleTree::Elements MerkleTree::getProof(const Buffer& element) const
+{
+    bool found = false;
+    size_t index;
+    for (index = 0; (index < elements_.size()) && !found; ++index) {
+        if (elements_[index] == element) {
+            found = true;
+        }
+    }
+    if (!found) {
+        throw std::runtime_error("Element not found");
+    }
+    return getProof(index);
+}
+
 void MerkleTree::getLayers()
 {
     layers_.clear();
@@ -106,4 +121,34 @@ MerkleTree::Buffer MerkleTree::combinedHash(const Buffer& first,
         std::copy(first.begin(), first.end(), buffer.end());
     }
     return hash(buffer);
+}
+
+MerkleTree::Elements MerkleTree::getProof(size_t index) const
+{
+    Elements proof;
+    for (   Layers::const_iterator it = layers_.begin();
+            it < layers_.end();
+            ++it) {
+        Buffer pair;
+        if (getPair(*it, index, pair)) {
+            proof.push_back(pair);
+        }
+        index = index / 2; // point to correct hash in next layer
+    } // for each layer
+    return proof;
+}
+
+bool MerkleTree::getPair(const Elements& layer, size_t index, Buffer& pair)
+{
+    size_t pairIndex;
+    if (index & 1) {
+        pairIndex = index - 1;
+    } else {
+        pairIndex = index + 1;
+    }
+    if (pairIndex >= layer.size()) {
+        return false;
+    }
+    pair = layer[pairIndex];
+    return true;
 }
