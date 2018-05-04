@@ -49,6 +49,14 @@ public :
     /** Destructor */
     virtual ~MerkleTree();
 
+    /** Compute a hash
+     *
+     * \param data [in] Data to hash
+     *
+     * \return The computed hash of `data`
+     */
+    static Buffer hash(const Buffer& data);
+
     /** Get the root of the Merkle Tree
      *
      * TODO
@@ -76,6 +84,12 @@ private :
 
     /** Build the Merkle Tree layers */
     void getLayers();
+
+    /** Build the next Merkle Tree layer */
+    void getNextLayer();
+
+    /** Combine two hashes into one */
+    Buffer combinedHash(const Buffer& first, const Buffer& second) const;
 };
 
 // XXX bool checkProofOrdered(proof, root, element, index);
