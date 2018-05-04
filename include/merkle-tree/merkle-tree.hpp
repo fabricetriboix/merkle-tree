@@ -69,6 +69,8 @@ public :
      * This function returns a list of hashes, starting from the hash of the
      * paired element of `element`, up to the top-level hash.
      *
+     * \param element [in] Element to get the proof for
+     *
      * \throw `std::runtime_error` if `element` is not in the base layer of
      *        the Merkle Tree
      */
@@ -79,7 +81,35 @@ public :
      */
     std::string getProofHex(const Buffer& element) const;
 
-    // XXX getProofOrdered(XXX element, XXX hex) const;
+    /** Get proof ordered
+     *
+     * \param element [in] Element to get the proof for
+     * \param index   [in] Index of above element
+     *
+     * **IMPORTANT NOTE**: `index` starts at 1, not at 0; so the first element
+     *                     has an index of 1, the second element an index of
+     *                     2, etc. This indexing scheme is only for this
+     *                     function and is not used anywhere else in this
+     *                     class.
+     *
+     * \throw `std::runtime_error` if `index` does not point to `element`
+     */
+    Elements getProofOrdered(const Buffer& element, size_t index) const;
+
+    /** Get proof ordered in string form
+     *
+     * \param element [in] Element to get the proof for
+     * \param index   [in] Index of above element
+     *
+     * **IMPORTANT NOTE**: `index` starts at 1, not at 0; so the first element
+     *                     has an index of 1, the second element an index of
+     *                     2, etc. This indexing scheme is only for this
+     *                     function and is not used anywhere else in this
+     *                     class.
+     *
+     * \throw `std::runtime_error` if `index` does not point to `element`
+     */
+    std::string getProofOrderedHex(const Buffer& element, size_t index) const;
 
 private :
     /** Layers data structure

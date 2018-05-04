@@ -3,6 +3,16 @@
 #include <iomanip>
 #include <algorithm>
 
+std::ostream& operator<<(std::ostream& os, const MerkleTree::Buffer& buffer)
+{
+    for (   MerkleTree::Buffer::const_iterator it = buffer.begin();
+            it != buffer.end();
+            ++it) {
+        os << std::hex << std::setw(2) << std::setfill('0') << *it;
+    }
+    return os;
+}
+
 MerkleTree::MerkleTree(const Elements& elements, bool preserveOrder)
     : preserveOrder_(preserveOrder)
 {
@@ -48,7 +58,7 @@ MerkleTree::Buffer MerkleTree::hash(const Buffer& data)
     // TODO blake2b
     Buffer result;
     result.push_back(0);
-    for (Buffer::const_iterator it = data.begin(); it < data.end(); ++it) {
+    for (Buffer::const_iterator it = data.begin(); it != data.end(); ++it) {
         result[0] += *it;
     }
     return result;
@@ -74,10 +84,36 @@ std::string MerkleTree::getProofHex(const Buffer& element) const
     Elements proof = getProof(element);
     std::ostringstream oss;
     oss << "0x";
-    for (   Buffer::const_iterator it = element.begin();
-            it < element.end();
+    for (   Elements::const_iterator it = proof.begin();
+            it != proof.end();
             ++it) {
-        oss << std::setw(2) << std::setfill('0') << std::hex << *it;
+        oss << *it;
+    }
+    return oss.str();
+}
+
+MerkleTree::Elements MerkleTree::getProofOrdered(const Buffer& element,
+        size_t index) const
+{
+    if (index == 0) {
+        throw std::runtime_error("Index is zero");
+    }
+    index--;
+    if ((index >= elements_.size()) || (elements_[index] != element)) {
+        throw std::runtime_error("Index does not point to element");
+    }
+    return getProof(index);
+}
+
+std::string MerkleTree::getProofOrderedHex(const Buffer& element,
+        size_t index) const
+{
+    Elements proof = getProofOrdered(element, index);
+    std::ostringstream oss;
+    oss << "0x";
+    for (   Elements::const_iterator it = proof.begin();
+            it != proof.end();
+            ++it) {
     }
     return oss.str();
 }
@@ -141,7 +177,7 @@ MerkleTree::Elements MerkleTree::getProof(size_t index) const
 {
     Elements proof;
     for (   Layers::const_iterator it = layers_.begin();
-            it < layers_.end();
+            it != layers_.end();
             ++it) {
         Buffer pair;
         if (getPair(*it, index, pair)) {
