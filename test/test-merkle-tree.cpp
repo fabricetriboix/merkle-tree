@@ -1,5 +1,8 @@
 #include <merkle-tree/merkle-tree.hpp>
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
+
+using ::testing::UnorderedElementsAre;
 
 TEST(MerkleTree, NoElementsShouldThrow)
 {
@@ -121,24 +124,14 @@ TEST(MerkleTree, CheckProofWithThreeElements)
 
     MerkleTree::Elements proof0 = merkle_tree.getProof(hash0);
     ASSERT_EQ(2u, proof0.size());
-    if (proof0[0] == hash1) {
-        EXPECT_EQ(proof0[1], hash2);
-    } else {
-        EXPECT_EQ(proof0[0], hash2);
-        EXPECT_EQ(proof0[1], hash1);
-    }
+    EXPECT_THAT(proof0, UnorderedElementsAre(hash1, hash2));
 
     MerkleTree::Buffer root = merkle_tree.getRoot();
     EXPECT_EQ(root, calculated_root);
 
     MerkleTree::Elements proof1 = merkle_tree.getProof(hash1);
     ASSERT_EQ(2u, proof1.size());
-    if (proof1[0] == hash0) {
-        EXPECT_EQ(proof1[1], hash2);
-    } else {
-        EXPECT_EQ(proof1[0], hash2);
-        EXPECT_EQ(proof1[1], hash0);
-    }
+    EXPECT_THAT(proof1, UnorderedElementsAre(hash0, hash2));
     EXPECT_TRUE(MerkleTree::checkProof(proof1, root, hash1));
 
     MerkleTree::Elements proof2 = merkle_tree.getProof(hash2);
