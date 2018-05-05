@@ -35,3 +35,26 @@ TEST(MerkleTree, SingleElementShouldBeRoot)
     MerkleTree::Elements elements(1, element); // [element]
     EXPECT_EQ(MerkleTree::merkleRoot(elements), element);
 }
+
+TEST(MerkleTree, DuplicatesShouldBeRemovedByDefault)
+{
+    MerkleTree::Buffer data0(3, 5);
+    MerkleTree::Buffer data1(6, 9);
+    MerkleTree::Buffer hash0 = MerkleTree::hash(data0);
+    MerkleTree::Buffer hash1 = MerkleTree::hash(data1);
+
+    MerkleTree::Elements elements0;
+    elements0.push_back(hash0);
+    elements0.push_back(hash0);
+    EXPECT_EQ(MerkleTree::merkleRoot(elements0), hash0);
+
+    MerkleTree::Elements elements1;
+    elements1.push_back(hash0);
+    elements1.push_back(hash1);
+    MerkleTree::Elements elements2;
+    elements2.push_back(hash0);
+    elements2.push_back(hash1);
+    elements2.push_back(hash0);
+    EXPECT_EQ(MerkleTree::merkleRoot(elements1),
+            MerkleTree::merkleRoot(elements2));
+}

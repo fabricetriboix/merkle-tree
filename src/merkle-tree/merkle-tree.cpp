@@ -206,11 +206,11 @@ MerkleTree::Buffer MerkleTree::combinedHash(const Buffer& first,
 {
     Buffer buffer;
     if (preserveOrder || (first > second)) {
-        std::copy(first.begin(), first.end(), buffer.end());
-        std::copy(second.begin(), second.end(), buffer.end());
+        std::copy(first.begin(), first.end(), std::back_inserter(buffer));
+        std::copy(second.begin(), second.end(), std::back_inserter(buffer));
     } else {
-        std::copy(second.begin(), second.end(), buffer.end());
-        std::copy(first.begin(), first.end(), buffer.end());
+        std::copy(second.begin(), second.end(), std::back_inserter(buffer));
+        std::copy(first.begin(), first.end(), std::back_inserter(buffer));
     }
     return hash(buffer);
 }
