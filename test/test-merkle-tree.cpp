@@ -99,3 +99,50 @@ TEST(MerkleTree, CheckProofWithTwoElements)
     EXPECT_EQ(hash0, proof1[0]);
     EXPECT_TRUE(MerkleTree::checkProof(proof1, root, hash1));
 }
+
+TEST(MerkleTree, CheckProofWithThreeElements)
+{
+    MerkleTree::Buffer data0(34, 45);
+    MerkleTree::Buffer data1(435, 5);
+    MerkleTree::Buffer data2(4, 5);
+    MerkleTree::Buffer hash0 = MerkleTree::hash(data0);
+    MerkleTree::Buffer hash1 = MerkleTree::hash(data1);
+    MerkleTree::Buffer hash2 = MerkleTree::hash(data2);
+    MerkleTree::Buffer calculated_hash01 = MerkleTree::combinedHash(hash0,
+            hash1, true);
+    MerkleTree::Buffer calculated_root = MerkleTree::combinedHash(
+            calculated_hash01, hash2, true);
+
+    MerkleTree::Elements elements;
+    elements.push_back(hash0);
+    elements.push_back(hash1);
+    elements.push_back(hash2);
+    MerkleTree merkle_tree(elements, true);
+
+    MerkleTree::Elements proof0 = merkle_tree.getProof(hash0);
+    ASSERT_EQ(2u, proof0.size());
+    if (proof0[0] == hash1) {
+        EXPECT_EQ(proof0[1], hash2);
+    } else {
+        EXPECT_EQ(proof0[0], hash2);
+        EXPECT_EQ(proof0[1], hash1);
+    }
+
+    MerkleTree::Buffer root = merkle_tree.getRoot();
+    EXPECT_EQ(root, calculated_root);
+
+    MerkleTree::Elements proof1 = merkle_tree.getProof(hash1);
+    ASSERT_EQ(2u, proof1.size());
+    if (proof1[0] == hash0) {
+        EXPECT_EQ(proof1[1], hash2);
+    } else {
+        EXPECT_EQ(proof1[0], hash2);
+        EXPECT_EQ(proof1[1], hash0);
+    }
+    EXPECT_TRUE(MerkleTree::checkProof(proof1, root, hash1));
+
+    MerkleTree::Elements proof2 = merkle_tree.getProof(hash2);
+    ASSERT_EQ(1u, proof2.size());
+    EXPECT_EQ(calculated_hash01, proof2[0]);
+    EXPECT_TRUE(MerkleTree::checkProof(proof2, root, hash2));
+}
