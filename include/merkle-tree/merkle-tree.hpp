@@ -68,6 +68,9 @@ public :
     static bool checkProof(const Elements& proof, const Buffer& root,
             const Buffer& element);
 
+    static Buffer merkleRoot(const Elements& elements,
+            bool preserveOrder = false);
+
     /** Get the root hash of the Merkle Tree */
     Buffer getRoot() const
     {
@@ -139,7 +142,7 @@ private :
     void getNextLayer();
 
     static Buffer combinedHash(const Buffer& first, const Buffer& second,
-            bool preserveOrder_);
+            bool preserveOrder);
 
     /** Get proof given the index of the element
      *

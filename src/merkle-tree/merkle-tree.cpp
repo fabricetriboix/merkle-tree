@@ -96,9 +96,15 @@ bool MerkleTree::checkProof(const Elements& proof, const Buffer& root,
     for (   Elements::const_iterator it = proof.begin();
             it != proof.end();
             ++it) {
-        tempHash = combinedHash(tempHash, *it);
+        tempHash = combinedHash(tempHash, *it, false);
     }
     return tempHash == root;
+}
+
+MerkleTree::Buffer MerkleTree::merkleRoot(const Elements& elements,
+        bool preserveOrder)
+{
+    return MerkleTree(elements, preserveOrder).getRoot();
 }
 
 MerkleTree::Elements MerkleTree::getProof(const Buffer& element) const
