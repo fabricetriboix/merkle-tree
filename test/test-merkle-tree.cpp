@@ -188,3 +188,70 @@ TEST(MerkleTreeOrdered, CheckProofWithThreeElements)
     EXPECT_EQ(calculated_hash01, proof2[0]);
     EXPECT_TRUE(MerkleTree::checkProofOrdered(proof2, root, hash2, 3));
 }
+
+TEST(MerkleTreeOrdered, DuplicatesShouldBePreserved)
+{
+    MerkleTree::Buffer data0(34, 45);
+    MerkleTree::Buffer data1(435, 5);
+    MerkleTree::Buffer data2(34, 45);
+    MerkleTree::Buffer hash0 = MerkleTree::hash(data0);
+    MerkleTree::Buffer hash1 = MerkleTree::hash(data1);
+    MerkleTree::Buffer hash2 = MerkleTree::hash(data2);
+    MerkleTree::Buffer calculated_hash01 = MerkleTree::combinedHash(hash0,
+            hash1, true);
+    MerkleTree::Buffer calculated_root = MerkleTree::combinedHash(
+            calculated_hash01, hash2, true);
+
+    MerkleTree::Elements elements;
+    elements.push_back(hash0);
+    elements.push_back(hash1);
+    elements.push_back(hash2);
+    MerkleTree ordered_tree(elements, true);
+
+    MerkleTree::Elements proof0 = ordered_tree.getProofOrdered(hash0, 1);
+    ASSERT_EQ(2u, proof0.size());
+    EXPECT_THAT(proof0, UnorderedElementsAre(hash1, hash2));
+
+    MerkleTree::Buffer root = ordered_tree.getRoot();
+    EXPECT_EQ(root, calculated_root);
+
+    MerkleTree::Elements proof1 = ordered_tree.getProofOrdered(hash1, 2);
+    ASSERT_EQ(2u, proof1.size());
+    EXPECT_THAT(proof1, UnorderedElementsAre(hash0, hash2));
+    EXPECT_TRUE(MerkleTree::checkProofOrdered(proof1, root, hash1, 2));
+
+    MerkleTree::Elements proof2 = ordered_tree.getProofOrdered(hash2, 3);
+    ASSERT_EQ(1u, proof2.size());
+    EXPECT_EQ(calculated_hash01, proof2[0]);
+    EXPECT_TRUE(MerkleTree::checkProofOrdered(proof2, root, hash2, 3));
+}
+
+TEST(MerkleTreeOrdered, CheckProofWithTenElements)
+{
+    MerkleTree::Elements elements;
+    for (size_t i = 0; i < 10; ++i) {
+        MerkleTree::Buffer data(1, i);
+        elements.push_back(MerkleTree::hash(data));
+    }
+    MerkleTree ordered_tree(elements, true);
+    MerkleTree::Buffer root = ordered_tree.getRoot();
+    for (size_t i = 0; i < elements.size(); ++i) {
+        MerkleTree::Elements proof = ordered_tree.getProofOrdered(elements[i], i+1);
+        EXPECT_TRUE(MerkleTree::checkProofOrdered(proof, root, elements[i], i+1));
+    }
+}
+
+TEST(MerkleTreeOrdered, CheckProofWithTenElementsWithDuplicates)
+{
+    MerkleTree::Elements elements;
+    for (size_t i = 0; i < 10; ++i) {
+        MerkleTree::Buffer data(1, i % 5);
+        elements.push_back(MerkleTree::hash(data));
+    }
+    MerkleTree ordered_tree(elements, true);
+    MerkleTree::Buffer root = ordered_tree.getRoot();
+    for (size_t i = 0; i < elements.size(); ++i) {
+        MerkleTree::Elements proof = ordered_tree.getProofOrdered(elements[i], i+1);
+        EXPECT_TRUE(MerkleTree::checkProofOrdered(proof, root, elements[i], i+1));
+    }
+}
