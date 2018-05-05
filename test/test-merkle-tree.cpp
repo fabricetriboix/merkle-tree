@@ -139,3 +139,24 @@ TEST(MerkleTree, CheckProofWithThreeElements)
     EXPECT_EQ(calculated_hash01, proof2[0]);
     EXPECT_TRUE(MerkleTree::checkProof(proof2, root, hash2));
 }
+
+TEST(MerkleTree, CheckProofWithTenElements)
+{
+    MerkleTree::Elements elements;
+    for (size_t i = 0; i < 10; ++i) {
+        MerkleTree::Buffer data(1, i);
+        elements.push_back(MerkleTree::hash(data));
+    }
+    MerkleTree merkle_tree(elements);
+    MerkleTree::Buffer root = merkle_tree.getRoot();
+    for (   MerkleTree::Elements::iterator it = elements.begin();
+            it != elements.end();
+            ++it) {
+        MerkleTree::Elements proof = merkle_tree.getProof(*it);
+        EXPECT_TRUE(MerkleTree::checkProof(proof, root, *it));
+    }
+
+    std::reverse(elements.begin(), elements.end());
+    MerkleTree reverse_tree(elements);
+    EXPECT_EQ(root, reverse_tree.getRoot());
+}

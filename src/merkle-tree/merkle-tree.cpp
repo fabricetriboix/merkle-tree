@@ -190,7 +190,7 @@ void MerkleTree::getNextLayer()
 
     // For each pair of elements in the previous layer
     // NB: If there is an odd number of elements, we ignore the last one for now
-    for (size_t i = 0; i < (previous_layer.size() / 2); i += 2) {
+    for (size_t i = 0; i < (previous_layer.size() / 2); ++i) {
         current_layer.push_back(combinedHash(previous_layer[2*i],
                     previous_layer[2*i + 1], preserveOrder_));
     }
