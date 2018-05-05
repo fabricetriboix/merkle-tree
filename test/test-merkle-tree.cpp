@@ -4,13 +4,13 @@
 
 using ::testing::UnorderedElementsAre;
 
-TEST(MerkleTree, NoElementsShouldThrow)
+TEST(MerkleTreeUnordered, NoElementsShouldThrow)
 {
     MerkleTree::Elements empty_elements;
     EXPECT_THROW(MerkleTree m(empty_elements), std::runtime_error);
 }
 
-TEST(MerkleTree, WrongSizeElementShouldThrow)
+TEST(MerkleTreeUnordered, WrongSizeElementShouldThrow)
 {
     MerkleTree::Elements elements;
 
@@ -31,7 +31,7 @@ TEST(MerkleTree, WrongSizeElementShouldThrow)
     EXPECT_THROW(MerkleTree m(elements), std::runtime_error);
 }
 
-TEST(MerkleTree, SingleElementShouldBeRoot)
+TEST(MerkleTreeUnordered, SingleElementShouldBeRoot)
 {
     MerkleTree::Buffer data(3, 7); // [7, 7, 7]
     MerkleTree::Buffer element = MerkleTree::hash(data);
@@ -39,7 +39,7 @@ TEST(MerkleTree, SingleElementShouldBeRoot)
     EXPECT_EQ(MerkleTree::merkleRoot(elements), element);
 }
 
-TEST(MerkleTree, DuplicatesShouldBeRemovedByDefault)
+TEST(MerkleTreeUnordered, DuplicatesShouldBeRemovedByDefault)
 {
     MerkleTree::Buffer data0(3, 5);
     MerkleTree::Buffer data1(6, 9);
@@ -62,7 +62,7 @@ TEST(MerkleTree, DuplicatesShouldBeRemovedByDefault)
             MerkleTree::merkleRoot(elements2));
 }
 
-TEST(MerkleTree, CheckProofWithOneElement)
+TEST(MerkleTreeUnordered, CheckProofWithOneElement)
 {
     MerkleTree::Buffer data0(7, 3);
     MerkleTree::Buffer hash0 = MerkleTree::hash(data0);
@@ -78,7 +78,7 @@ TEST(MerkleTree, CheckProofWithOneElement)
     EXPECT_TRUE(MerkleTree::checkProof(proof, root, hash0));
 }
 
-TEST(MerkleTree, CheckProofWithTwoElements)
+TEST(MerkleTreeUnordered, CheckProofWithTwoElements)
 {
     MerkleTree::Buffer data0(78, 4);
     MerkleTree::Buffer hash0 = MerkleTree::hash(data0);
@@ -103,44 +103,7 @@ TEST(MerkleTree, CheckProofWithTwoElements)
     EXPECT_TRUE(MerkleTree::checkProof(proof1, root, hash1));
 }
 
-TEST(MerkleTree, CheckProofWithThreeElements)
-{
-    MerkleTree::Buffer data0(34, 45);
-    MerkleTree::Buffer data1(435, 5);
-    MerkleTree::Buffer data2(4, 5);
-    MerkleTree::Buffer hash0 = MerkleTree::hash(data0);
-    MerkleTree::Buffer hash1 = MerkleTree::hash(data1);
-    MerkleTree::Buffer hash2 = MerkleTree::hash(data2);
-    MerkleTree::Buffer calculated_hash01 = MerkleTree::combinedHash(hash0,
-            hash1, true);
-    MerkleTree::Buffer calculated_root = MerkleTree::combinedHash(
-            calculated_hash01, hash2, true);
-
-    MerkleTree::Elements elements;
-    elements.push_back(hash0);
-    elements.push_back(hash1);
-    elements.push_back(hash2);
-    MerkleTree merkle_tree(elements, true);
-
-    MerkleTree::Elements proof0 = merkle_tree.getProof(hash0);
-    ASSERT_EQ(2u, proof0.size());
-    EXPECT_THAT(proof0, UnorderedElementsAre(hash1, hash2));
-
-    MerkleTree::Buffer root = merkle_tree.getRoot();
-    EXPECT_EQ(root, calculated_root);
-
-    MerkleTree::Elements proof1 = merkle_tree.getProof(hash1);
-    ASSERT_EQ(2u, proof1.size());
-    EXPECT_THAT(proof1, UnorderedElementsAre(hash0, hash2));
-    EXPECT_TRUE(MerkleTree::checkProof(proof1, root, hash1));
-
-    MerkleTree::Elements proof2 = merkle_tree.getProof(hash2);
-    ASSERT_EQ(1u, proof2.size());
-    EXPECT_EQ(calculated_hash01, proof2[0]);
-    EXPECT_TRUE(MerkleTree::checkProof(proof2, root, hash2));
-}
-
-TEST(MerkleTree, CheckProofWithTenElements)
+TEST(MerkleTreeUnordered, CheckProofWithTenElements)
 {
     MerkleTree::Elements elements;
     for (size_t i = 0; i < 10; ++i) {
@@ -159,4 +122,69 @@ TEST(MerkleTree, CheckProofWithTenElements)
     std::reverse(elements.begin(), elements.end());
     MerkleTree reverse_tree(elements);
     EXPECT_EQ(root, reverse_tree.getRoot());
+}
+
+TEST(MerkleTreeOrdered, CheckProofWithTwoElements)
+{
+    MerkleTree::Buffer data0(45, 37);
+    MerkleTree::Buffer data1(5, 7);
+    MerkleTree::Buffer hash0 = MerkleTree::hash(data0);
+    MerkleTree::Buffer hash1 = MerkleTree::hash(data1);
+
+    MerkleTree::Elements elements;
+    elements.push_back(hash0);
+    elements.push_back(hash1);
+    MerkleTree ordered_tree(elements, true);
+
+    MerkleTree::Elements proof0 = ordered_tree.getProof(hash0);
+    ASSERT_EQ(1u, proof0.size());
+    EXPECT_EQ(hash1, proof0[0]);
+
+    MerkleTree::Buffer root = ordered_tree.getRoot();
+    MerkleTree::Buffer calculcated_root = MerkleTree::combinedHash(
+            hash0, hash1, true);
+    EXPECT_EQ(root, calculcated_root);
+    EXPECT_TRUE(MerkleTree::checkProofOrdered(proof0, root, hash0, 1));
+
+    MerkleTree::Elements proof1 = ordered_tree.getProof(hash1);
+    ASSERT_EQ(1u, proof1.size());
+    EXPECT_EQ(hash0, proof1[0]);
+    EXPECT_TRUE(MerkleTree::checkProofOrdered(proof1, root, hash1, 2));
+}
+
+TEST(MerkleTreeOrdered, CheckProofWithThreeElements)
+{
+    MerkleTree::Buffer data0(34, 45);
+    MerkleTree::Buffer data1(435, 5);
+    MerkleTree::Buffer data2(4, 5);
+    MerkleTree::Buffer hash0 = MerkleTree::hash(data0);
+    MerkleTree::Buffer hash1 = MerkleTree::hash(data1);
+    MerkleTree::Buffer hash2 = MerkleTree::hash(data2);
+    MerkleTree::Buffer calculated_hash01 = MerkleTree::combinedHash(hash0,
+            hash1, true);
+    MerkleTree::Buffer calculated_root = MerkleTree::combinedHash(
+            calculated_hash01, hash2, true);
+
+    MerkleTree::Elements elements;
+    elements.push_back(hash0);
+    elements.push_back(hash1);
+    elements.push_back(hash2);
+    MerkleTree ordered_tree(elements, true);
+
+    MerkleTree::Elements proof0 = ordered_tree.getProof(hash0);
+    ASSERT_EQ(2u, proof0.size());
+    EXPECT_THAT(proof0, UnorderedElementsAre(hash1, hash2));
+
+    MerkleTree::Buffer root = ordered_tree.getRoot();
+    EXPECT_EQ(root, calculated_root);
+
+    MerkleTree::Elements proof1 = ordered_tree.getProof(hash1);
+    ASSERT_EQ(2u, proof1.size());
+    EXPECT_THAT(proof1, UnorderedElementsAre(hash0, hash2));
+    EXPECT_TRUE(MerkleTree::checkProofOrdered(proof1, root, hash1, 2));
+
+    MerkleTree::Elements proof2 = ordered_tree.getProof(hash2);
+    ASSERT_EQ(1u, proof2.size());
+    EXPECT_EQ(calculated_hash01, proof2[0]);
+    EXPECT_TRUE(MerkleTree::checkProofOrdered(proof2, root, hash2, 3));
 }
