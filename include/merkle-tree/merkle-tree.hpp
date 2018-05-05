@@ -65,6 +65,9 @@ public :
     static bool checkProofOrdered(const Elements& proof, const Buffer& root,
             const Buffer& element, size_t index);
 
+    static bool checkProof(const Elements& proof, const Buffer& root,
+            const Buffer& element);
+
     /** Get the root hash of the Merkle Tree */
     Buffer getRoot() const
     {

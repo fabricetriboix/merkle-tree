@@ -89,6 +89,18 @@ bool MerkleTree::checkProofOrdered(const Elements& proof,
     return tempHash == root;
 }
 
+bool MerkleTree::checkProof(const Elements& proof, const Buffer& root,
+        const Buffer& element)
+{
+    Buffer tempHash = element;
+    for (   Elements::const_iterator it = proof.begin();
+            it != proof.end();
+            ++it) {
+        tempHash = combinedHash(tempHash, *it);
+    }
+    return tempHash == root;
+}
+
 MerkleTree::Elements MerkleTree::getProof(const Buffer& element) const
 {
     bool found = false;
