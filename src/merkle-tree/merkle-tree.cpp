@@ -56,8 +56,7 @@ MerkleTree::~MerkleTree()
 MerkleTree::Buffer MerkleTree::hash(const Buffer& data)
 {
     // TODO blake2b
-    Buffer result;
-    result.push_back(0);
+    Buffer result(MERKLE_TREE_ELEMENT_SIZE, 0);
     for (Buffer::const_iterator it = data.begin(); it != data.end(); ++it) {
         result[0] += *it;
     }

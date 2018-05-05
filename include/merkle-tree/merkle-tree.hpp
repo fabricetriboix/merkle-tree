@@ -52,7 +52,7 @@ public :
 
     /** Compute a hash
      *
-     * \param data [in] Data to hash
+     * \param data [in] Data to hash (can be any size)
      *
      * \return The computed hash of `data`
      */
