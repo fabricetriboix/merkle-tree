@@ -110,9 +110,10 @@ MerkleTree::Elements MerkleTree::getProof(const Buffer& element) const
 {
     bool found = false;
     size_t index;
-    for (index = 0; (index < elements_.size()) && !found; ++index) {
-        if (elements_[index] == element) {
+    for (size_t i = 0; (i < elements_.size()) && !found; ++i) {
+        if (elements_[i] == element) {
             found = true;
+            index = i;
         }
     }
     if (!found) {

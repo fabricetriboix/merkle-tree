@@ -58,3 +58,19 @@ TEST(MerkleTree, DuplicatesShouldBeRemovedByDefault)
     EXPECT_EQ(MerkleTree::merkleRoot(elements1),
             MerkleTree::merkleRoot(elements2));
 }
+
+TEST(MerkleTree, CheckProofWithOneElement)
+{
+    MerkleTree::Buffer data0(7, 3);
+    MerkleTree::Buffer hash0 = MerkleTree::hash(data0);
+    MerkleTree::Elements elements(1, hash0);
+    MerkleTree merkle_tree(elements);
+
+    MerkleTree::Elements proof = merkle_tree.getProof(hash0);
+    EXPECT_EQ(0, proof.size());
+
+    MerkleTree::Buffer root = merkle_tree.getRoot();
+    EXPECT_EQ(root, hash0);
+
+    EXPECT_TRUE(MerkleTree::checkProof(proof, root, hash0));
+}
