@@ -22,5 +22,19 @@ endif()
 target_include_directories(merkle_tree
     PUBLIC include)
 
-#target_link_libraries(merkle_tree
-#    XXX)
+#target_link_libraries(merkle_tree XXX)
+
+add_executable(unit-tests test/test-merkle-tree.cpp)
+set_property(TARGET unit-tests PROPERTY CXX_STANDARD 98)
+set_property(TARGET unit-tests PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET unit-tests PROPERTY CXX_EXTENSIONS OFF)
+
+# Turn on maximum warnings
+if (CMAKE_COMPILER_IS_GNUCXX)
+target_compile_options(unit-tests PUBLIC -Wall -Wextra -Werror
+    -Wno-unused-parameter)
+endif()
+
+target_link_libraries(unit-tests merkle_tree gtest gmock_main)
+
+add_test(NAME merke-tree-tests COMMAND unit-tests)
