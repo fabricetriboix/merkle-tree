@@ -58,6 +58,9 @@ public :
      */
     static Buffer hash(const Buffer& data);
 
+    static Buffer combinedHash(const Buffer& first, const Buffer& second,
+            bool preserveOrder);
+
     /** TODO
      *
      * \param index [in] Starts a 1, not 0
@@ -140,9 +143,6 @@ private :
 
     /** Build the next Merkle Tree layer */
     void getNextLayer();
-
-    static Buffer combinedHash(const Buffer& first, const Buffer& second,
-            bool preserveOrder);
 
     /** Get proof given the index of the element
      *

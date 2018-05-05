@@ -74,3 +74,28 @@ TEST(MerkleTree, CheckProofWithOneElement)
 
     EXPECT_TRUE(MerkleTree::checkProof(proof, root, hash0));
 }
+
+TEST(MerkleTree, CheckProofWithTwoElements)
+{
+    MerkleTree::Buffer data0(78, 4);
+    MerkleTree::Buffer hash0 = MerkleTree::hash(data0);
+    MerkleTree::Buffer data1(4, 89);
+    MerkleTree::Buffer hash1 = MerkleTree::hash(data1);
+
+    MerkleTree::Elements elements;
+    elements.push_back(hash0);
+    elements.push_back(hash1);
+    MerkleTree merkle_tree(elements);
+
+    MerkleTree::Elements proof0 = merkle_tree.getProof(hash0);
+    MerkleTree::Buffer root = merkle_tree.getRoot();
+    ASSERT_EQ(1u, proof0.size());
+    EXPECT_EQ(hash1, proof0[0]);
+    EXPECT_EQ(root, MerkleTree::combinedHash(hash0, hash1, false));
+    EXPECT_TRUE(MerkleTree::checkProof(proof0, root, hash0));
+
+    MerkleTree::Elements proof1 = merkle_tree.getProof(hash1);
+    ASSERT_EQ(1u, proof1.size());
+    EXPECT_EQ(hash0, proof1[0]);
+    EXPECT_TRUE(MerkleTree::checkProof(proof1, root, hash1));
+}
