@@ -58,6 +58,13 @@ public :
      */
     static Buffer hash(const Buffer& data);
 
+    /** TODO
+     *
+     * \param index [in] Starts a 1, not 0
+     */
+    static bool checkProofOrdered(const Elements& proof, const Buffer& root,
+            const Buffer& element, size_t index);
+
     /** Get the root hash of the Merkle Tree */
     Buffer getRoot() const
     {
@@ -88,9 +95,7 @@ public :
      *
      * **IMPORTANT NOTE**: `index` starts at 1, not at 0; so the first element
      *                     has an index of 1, the second element an index of
-     *                     2, etc. This indexing scheme is only for this
-     *                     function and is not used anywhere else in this
-     *                     class.
+     *                     2, etc.
      *
      * \throw `std::runtime_error` if `index` does not point to `element`
      */
@@ -103,9 +108,7 @@ public :
      *
      * **IMPORTANT NOTE**: `index` starts at 1, not at 0; so the first element
      *                     has an index of 1, the second element an index of
-     *                     2, etc. This indexing scheme is only for this
-     *                     function and is not used anywhere else in this
-     *                     class.
+     *                     2, etc.
      *
      * \throw `std::runtime_error` if `index` does not point to `element`
      */
@@ -132,8 +135,8 @@ private :
     /** Build the next Merkle Tree layer */
     void getNextLayer();
 
-    /** Combine two hashes into one */
-    Buffer combinedHash(const Buffer& first, const Buffer& second) const;
+    static Buffer combinedHash(const Buffer& first, const Buffer& second,
+            bool preserveOrder_);
 
     /** Get proof given the index of the element
      *
@@ -153,7 +156,6 @@ private :
     static bool getPair(const Elements& layer, size_t index, Buffer& pair);
 };
 
-// XXX bool checkProofOrdered(proof, root, element, index);
 // XXX bool checkProof(proof, root, element);
 // XXX merkleRoot(elements, preserveOrder);
 

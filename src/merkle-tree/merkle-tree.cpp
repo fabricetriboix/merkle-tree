@@ -64,6 +64,31 @@ MerkleTree::Buffer MerkleTree::hash(const Buffer& data)
     return result;
 }
 
+bool MerkleTree::checkProofOrdered(const Elements& proof,
+        const Buffer& root, const Buffer& element, size_t index)
+{
+    Buffer tempHash = element;
+    for (size_t i = 0; i < proof.size(); ++i) {
+        size_t remaining = proof.size() - i;
+
+        // We don't assume that the tree is padded to a power of 2. If the
+        // index is odd, then the proof starts with a hash at a higher layer,
+        // so we have to adjust the index to be the index at that layer.
+        while ((remaining > 0) && (index & 1) && (index > (1u << remaining))) {
+            index = index / 2;
+        }
+
+        if (index & 1) {
+            tempHash = combinedHash(tempHash, proof[i], true);
+        } else {
+            tempHash = combinedHash(proof[i], tempHash, true);
+        }
+        index = index / 2;
+    }
+
+    return tempHash == root;
+}
+
 MerkleTree::Elements MerkleTree::getProof(const Buffer& element) const
 {
     bool found = false;
@@ -148,8 +173,8 @@ void MerkleTree::getNextLayer()
     // For each pair of elements in the previous layer
     // NB: If there is an odd number of elements, we ignore the last one for now
     for (size_t i = 0; i < (previous_layer.size() / 2); i += 2) {
-        current_layer.push_back(
-                combinedHash(previous_layer[2*i], previous_layer[2*i + 1]));
+        current_layer.push_back(combinedHash(previous_layer[2*i],
+                    previous_layer[2*i + 1], preserveOrder_));
     }
 
     // If there is an odd one out at the end, process it
@@ -160,10 +185,10 @@ void MerkleTree::getNextLayer()
 }
 
 MerkleTree::Buffer MerkleTree::combinedHash(const Buffer& first,
-        const Buffer& second) const
+        const Buffer& second, bool preserveOrder)
 {
     Buffer buffer;
-    if (preserveOrder_ || (first > second)) {
+    if (preserveOrder || (first > second)) {
         std::copy(first.begin(), first.end(), buffer.end());
         std::copy(second.begin(), second.end(), buffer.end());
     } else {
