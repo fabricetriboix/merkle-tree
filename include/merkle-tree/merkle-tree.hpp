@@ -30,20 +30,26 @@ public :
 
     /** List of elements
      *
-     * This is a list of hashes.
+     * This is a list of hashes. 'Element' is another name for 'hash' in the
+     * context of a Merkle Tree.
      */
     typedef std::deque<Buffer> Elements;
 
     /** Constructor
      *
+     * If `preserveOrder` is set to `true`, the `elements` will be used in
+     * the order they are presented, and without any transformations. If set
+     * to `false`, the `elements` will be sorted and duplicates will be removed
+     * before the Merkle Tree is built.
+     *
      * \param elements      [in] Elements to add to the Merkle Tree
      *                           There must be at least one element
      * \param preserveOrder [in] Whether to preserve the elements order
      *
-     * \throw `std::runtime_error` if `elements` contains elements which are
-     *        not of the right size, \see MERKLE_TREE_ELEMENT_SIZE.
-     *
      * \throw `std::runtime_error` if `elements` is empty
+     *
+     * \throw `std::runtime_error` if `elements` contains an element which is
+     *        not of the right size, \see MERKLE_TREE_ELEMENT_SIZE.
      */
     MerkleTree(const Elements& elements, bool preserveOrder = false);
 
@@ -58,21 +64,16 @@ public :
      */
     static Buffer hash(const Buffer& data);
 
+    /** Combine two hashes into one
+     *
+     * \param first         [in] First hash (i.e. the one on the left)
+     * \param second        [in] Second hash (i.e. the one on the right)
+     * \param preserveOrder [in] Whether to preserve the order
+     *
+     * \return The hash of the combined two hashes
+     */
     static Buffer combinedHash(const Buffer& first, const Buffer& second,
             bool preserveOrder);
-
-    /** TODO
-     *
-     * \param index [in] Starts a 1, not 0
-     */
-    static bool checkProofOrdered(const Elements& proof, const Buffer& root,
-            const Buffer& element, size_t index);
-
-    static bool checkProof(const Elements& proof, const Buffer& root,
-            const Buffer& element);
-
-    static Buffer merkleRoot(const Elements& elements,
-            bool preserveOrder = false);
 
     /** Get the root hash of the Merkle Tree */
     Buffer getRoot() const
@@ -80,27 +81,63 @@ public :
         return layers_.back()[0];
     }
 
-    /** Get proof
+    /** Compute a root hash given a set of hashes
+     *
+     * This function builds a temporary Merkle Tree and extracts its root
+     * hash. The temporary Merkle Tree will be built using the passed
+     * arguments.
+     *
+     * \param elements      [in] Set of hashes used to build the Merkle Tree
+     * \param preserveOrder [in] Whether to preserve the order of `elements`
+     *
+     * \return The root hash of a Merkle Tree that would be build using the
+     *         given `elements`
+     *
+     * \throw `std::runtime_error` if `elements` is empty
+     *
+     * \throw `std::runtime_error` if `elements` contains an element which is
+     *        not of the right size, \see MERKLE_TREE_ELEMENT_SIZE.
+     */
+    static Buffer merkleRoot(const Elements& elements,
+            bool preserveOrder = false);
+
+    /** Get proof for a given Merkle Tree element
      *
      * This function returns a list of hashes, starting from the hash of the
      * paired element of `element`, up to the top-level hash.
      *
      * \param element [in] Element to get the proof for
      *
+     * \return The list of hashes from lowest to root
+     *
      * \throw `std::runtime_error` if `element` is not in the base layer of
      *        the Merkle Tree
      */
     Elements getProof(const Buffer& element) const;
 
-    /** Get proof in string form
+    /** Get proof in string form for a given Merkle Tree element
      *
+     * This function is similar to `getProof()` but will return the proof in
+     * hexadecimal string form.
+     *
+     * \param element [in] Element to get the proof for
+     *
+     * \return The list of hashes from lowest to root, in hex form
+     *
+     * \throw `std::runtime_error` if `element` is not in the base layer of
+     *        the Merkle Tree
      */
     std::string getProofHex(const Buffer& element) const;
 
-    /** Get proof ordered
+    /** Get proof for a given element of a Merkle Tree with preserved order
+     *
+     * This function returns a list of hashes, starting from the hash of the
+     * paired element of `element`, up to the top-level hash. This function
+     * should be used on a Merkle Tree with preserved order.
      *
      * \param element [in] Element to get the proof for
-     * \param index   [in] Index of above element
+     * \param index   [in] Index of above element; this is necessary to
+     *                     distinguish potential duplicates
      *
      * **IMPORTANT NOTE**: `index` starts at 1, not at 0; so the first element
      *                     has an index of 1, the second element an index of
@@ -110,10 +147,14 @@ public :
      */
     Elements getProofOrdered(const Buffer& element, size_t index) const;
 
-    /** Get proof ordered in string form
+    /** Get proof in string form for a given element of a Merkle Tree with preserved order
+     *
+     * This function is similar to `getProofOrdered()`, but it will return the
+     * proof in hexadecimal string form.
      *
      * \param element [in] Element to get the proof for
-     * \param index   [in] Index of above element
+     * \param index   [in] Index of above element; this is necessary to
+     *                     distinguish potential duplicates
      *
      * **IMPORTANT NOTE**: `index` starts at 1, not at 0; so the first element
      *                     has an index of 1, the second element an index of
@@ -122,6 +163,41 @@ public :
      * \throw `std::runtime_error` if `index` does not point to `element`
      */
     std::string getProofOrderedHex(const Buffer& element, size_t index) const;
+
+    /** Check the given proof for the given element
+     *
+     * This function will check that the given proof is valid for the given
+     * `element`.
+     *
+     * \param proof   [in] Proof to check
+     * \param root    [in] Root hash of the Merke Tree
+     * \param element [in] Element for which the proof is checked
+     *
+     * \return `true` if `proof` is valid, `false` if not
+     */
+    static bool checkProof(const Elements& proof, const Buffer& root,
+            const Buffer& element);
+
+    /** Check the given proof for the given element in a Merkle Tree with order preserved
+     *
+     * This function will check that the given proof is valid for the given
+     * `element`. This function should be used only on Merkle Trees where
+     * `preserveOrder` was set to `true`.
+     *
+     * \param proof   [in] Proof to check
+     * \param root    [in] Root hash of the Merke Tree
+     * \param element [in] Element for which the proof is checked
+     * \param index   [in] Index of above element; this is necessary to
+     *                     distinguish potential duplicates
+     *
+     * **IMPORTANT NOTE**: `index` starts at 1, not at 0; so the first element
+     *                     has an index of 1, the second element an index of
+     *                     2, etc.
+     *
+     * \return `true` if `proof` is valid, `false` if not
+     */
+    static bool checkProofOrdered(const Elements& proof, const Buffer& root,
+            const Buffer& element, size_t index);
 
 private :
     /** Layers data structure
@@ -134,9 +210,9 @@ private :
      */
     typedef std::deque<Elements> Layers;
 
-    bool     preserveOrder_; /**< Whether to preserver the initial order */
+    bool     preserveOrder_; /**< Whether to preserve the initial order */
     Elements elements_;      /**< Leaves of the Merkle Tree */
-    Layers   layers_;        /**< The actual Merkle Tree */
+    Layers   layers_;        /**< The various layers of the Merkle Tree */
 
     /** Build the Merkle Tree layers */
     void getLayers();
@@ -146,6 +222,9 @@ private :
 
     /** Get proof given the index of the element
      *
+     * \param index [in] Index of the element to get the proof for
+     *
+     * \return The list of hashes that make up the proof
      */
     Elements getProof(size_t index) const;
 
@@ -160,9 +239,9 @@ private :
      *         for the last one, which obviously has no peer)
      */
     static bool getPair(const Elements& layer, size_t index, Buffer& pair);
-};
 
-// XXX bool checkProof(proof, root, element);
-// XXX merkleRoot(elements, preserveOrder);
+    /** Converts a list of hashes into a hexadecimal string */
+    static std::string elementsToHex(const Elements& elements);
+};
 
 #endif // MERKLE_TREE_HPP_

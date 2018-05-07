@@ -63,41 +63,18 @@ MerkleTree::Buffer MerkleTree::hash(const Buffer& data)
     return result;
 }
 
-bool MerkleTree::checkProofOrdered(const Elements& proof,
-        const Buffer& root, const Buffer& element, size_t index)
+MerkleTree::Buffer MerkleTree::combinedHash(const Buffer& first,
+        const Buffer& second, bool preserveOrder)
 {
-    Buffer tempHash = element;
-    for (size_t i = 0; i < proof.size(); ++i) {
-        size_t remaining = proof.size() - i;
-
-        // We don't assume that the tree is padded to a power of 2. If the
-        // index is odd, then the proof starts with a hash at a higher layer,
-        // so we have to adjust the index to be the index at that layer.
-        while ((remaining > 0) && (index & 1) && (index > (1u << remaining))) {
-            index = index / 2;
-        }
-
-        if (index & 1) {
-            tempHash = combinedHash(tempHash, proof[i], true);
-        } else {
-            tempHash = combinedHash(proof[i], tempHash, true);
-        }
-        index = index / 2;
+    Buffer buffer;
+    if (preserveOrder || (first > second)) {
+        std::copy(first.begin(), first.end(), std::back_inserter(buffer));
+        std::copy(second.begin(), second.end(), std::back_inserter(buffer));
+    } else {
+        std::copy(second.begin(), second.end(), std::back_inserter(buffer));
+        std::copy(first.begin(), first.end(), std::back_inserter(buffer));
     }
-
-    return tempHash == root;
-}
-
-bool MerkleTree::checkProof(const Elements& proof, const Buffer& root,
-        const Buffer& element)
-{
-    Buffer tempHash = element;
-    for (   Elements::const_iterator it = proof.begin();
-            it != proof.end();
-            ++it) {
-        tempHash = combinedHash(tempHash, *it, false);
-    }
-    return tempHash == root;
+    return hash(buffer);
 }
 
 MerkleTree::Buffer MerkleTree::merkleRoot(const Elements& elements,
@@ -124,15 +101,7 @@ MerkleTree::Elements MerkleTree::getProof(const Buffer& element) const
 
 std::string MerkleTree::getProofHex(const Buffer& element) const
 {
-    Elements proof = getProof(element);
-    std::ostringstream oss;
-    oss << "0x";
-    for (   Elements::const_iterator it = proof.begin();
-            it != proof.end();
-            ++it) {
-        oss << *it;
-    }
-    return oss.str();
+    return elementsToHex(getProof(element));
 }
 
 MerkleTree::Elements MerkleTree::getProofOrdered(const Buffer& element,
@@ -151,14 +120,43 @@ MerkleTree::Elements MerkleTree::getProofOrdered(const Buffer& element,
 std::string MerkleTree::getProofOrderedHex(const Buffer& element,
         size_t index) const
 {
-    Elements proof = getProofOrdered(element, index);
-    std::ostringstream oss;
-    oss << "0x";
+    return elementsToHex(getProofOrdered(element, index));
+}
+
+bool MerkleTree::checkProof(const Elements& proof, const Buffer& root,
+        const Buffer& element)
+{
+    Buffer tempHash = element;
     for (   Elements::const_iterator it = proof.begin();
             it != proof.end();
             ++it) {
+        tempHash = combinedHash(tempHash, *it, false);
     }
-    return oss.str();
+    return tempHash == root;
+}
+
+bool MerkleTree::checkProofOrdered(const Elements& proof,
+        const Buffer& root, const Buffer& element, size_t index)
+{
+    Buffer tempHash = element;
+    for (size_t i = 0; i < proof.size(); ++i) {
+        size_t remaining = proof.size() - i;
+
+        // We don't assume that the tree is padded to a power of 2. If the
+        // index is odd, then the proof starts with a hash at a higher layer,
+        // so we have to adjust the index to be the index at that layer.
+        while ((remaining > 0) && (index & 1) && (index > (1u << remaining))) {
+            index = index / 2;
+        }
+
+        if (index & 1) {
+            tempHash = combinedHash(tempHash, proof[i], true);
+        } else {
+            tempHash = combinedHash(proof[i], tempHash, true);
+        }
+        index = index / 2;
+    }
+    return tempHash == root;
 }
 
 void MerkleTree::getLayers()
@@ -202,20 +200,6 @@ void MerkleTree::getNextLayer()
     }
 }
 
-MerkleTree::Buffer MerkleTree::combinedHash(const Buffer& first,
-        const Buffer& second, bool preserveOrder)
-{
-    Buffer buffer;
-    if (preserveOrder || (first > second)) {
-        std::copy(first.begin(), first.end(), std::back_inserter(buffer));
-        std::copy(second.begin(), second.end(), std::back_inserter(buffer));
-    } else {
-        std::copy(second.begin(), second.end(), std::back_inserter(buffer));
-        std::copy(first.begin(), first.end(), std::back_inserter(buffer));
-    }
-    return hash(buffer);
-}
-
 MerkleTree::Elements MerkleTree::getProof(size_t index) const
 {
     Elements proof;
@@ -244,4 +228,16 @@ bool MerkleTree::getPair(const Elements& layer, size_t index, Buffer& pair)
     }
     pair = layer[pairIndex];
     return true;
+}
+
+std::string MerkleTree::elementsToHex(const Elements& elements)
+{
+    std::ostringstream oss;
+    oss << "0x";
+    for (   Elements::const_iterator it = elements.begin();
+            it != elements.end();
+            ++it) {
+        oss << *it;
+    }
+    return oss.str();
 }
