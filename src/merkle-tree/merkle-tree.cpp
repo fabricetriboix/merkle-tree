@@ -138,6 +138,8 @@ bool MerkleTree::checkProof(const Elements& proof, const Buffer& root,
     return tempHash == root;
 }
 
+// Fabrice: This function seems buggy to me, rewrote it below
+#if 0
 bool MerkleTree::checkProofOrdered(const Elements& proof,
         const Buffer& root, const Buffer& element, size_t index)
 {
@@ -156,6 +158,33 @@ bool MerkleTree::checkProofOrdered(const Elements& proof,
             tempHash = combinedHash(tempHash, proof[i], true);
         } else {
             tempHash = combinedHash(proof[i], tempHash, true);
+        }
+        index = index / 2;
+    }
+    return tempHash == root;
+}
+#endif
+
+bool MerkleTree::checkProofOrdered(const Elements& proof,
+        const Buffer& root, const Buffer& element, size_t index)
+{
+    --index; // `index` argument starts at 1
+    Buffer tempHash = element;
+    for (size_t i = 0; i < proof.size(); ++i) {
+        size_t remaining = proof.size() - i;
+
+        // We don't assume that the tree is padded to a power of 2. If the
+        // index is even and the last one of the layer, then the proof starts
+        // with a hash at a higher layer, so we have to adjust the index to be
+        // the index at that layer.
+        while (((index & 1) == 0) && (index >= (1u << remaining))) {
+            index = index / 2;
+        }
+
+        if (index & 1) {
+            tempHash = combinedHash(proof[i], tempHash, true);
+        } else {
+            tempHash = combinedHash(tempHash, proof[i], true);
         }
         index = index / 2;
     }
