@@ -38,3 +38,16 @@ endif()
 target_link_libraries(unit-tests merkle_tree gtest gmock_main)
 
 add_test(NAME merke-tree-tests COMMAND unit-tests)
+
+find_package(Doxygen)
+if (DOXYGEN_FOUND)
+    configure_file(Doxyfile.in Doxyfile @ONLY)
+
+    add_custom_target(doc
+        COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Generating doxygen documentation"
+        VERBATIM)
+
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc)
+endif()
