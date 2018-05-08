@@ -56,12 +56,14 @@ MerkleTree::~MerkleTree()
 
 MerkleTree::Buffer MerkleTree::hash(const Buffer& data)
 {
-    // TODO blake2b
-    Buffer result(MERKLE_TREE_ELEMENT_SIZE_B, 0);
+    blake2b_state state;
+    blake2b_init(&state, MERKLE_TREE_ELEMENT_SIZE_B);
     for (Buffer::const_iterator it = data.begin(); it != data.end(); ++it) {
-        result[0] += *it;
+        blake2b_update(&state, &(*it), sizeof(*it));
     }
-    return result;
+    uint8_t digest[MERKLE_TREE_ELEMENT_SIZE_B];
+    blake2b_final(&state, digest, sizeof(digest));
+    return Buffer(digest, digest + sizeof(digest));
 }
 
 MerkleTree::Buffer MerkleTree::combinedHash(const Buffer& first,

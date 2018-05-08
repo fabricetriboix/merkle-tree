@@ -3,6 +3,7 @@
 #include <gmock/gmock.h>
 
 using ::testing::UnorderedElementsAre;
+using ::testing::ElementsAre;
 
 TEST(MerkleTreeUnordered, NoElementsShouldThrow)
 {
@@ -141,9 +142,9 @@ TEST(MerkleTreeOrdered, CheckProofWithTwoElements)
     EXPECT_EQ(hash1, proof0[0]);
 
     MerkleTree::Buffer root = ordered_tree.getRoot();
-    MerkleTree::Buffer calculcated_root = MerkleTree::combinedHash(
+    MerkleTree::Buffer calculated_root = MerkleTree::combinedHash(
             hash0, hash1, true);
-    EXPECT_EQ(root, calculcated_root);
+    EXPECT_EQ(root, calculated_root);
     EXPECT_TRUE(MerkleTree::checkProofOrdered(proof0, root, hash0, 1));
 
     MerkleTree::Elements proof1 = ordered_tree.getProof(hash1);
@@ -173,10 +174,11 @@ TEST(MerkleTreeOrdered, CheckProofWithThreeElements)
 
     MerkleTree::Elements proof0 = ordered_tree.getProof(hash0);
     ASSERT_EQ(2u, proof0.size());
-    EXPECT_THAT(proof0, UnorderedElementsAre(hash1, hash2));
+    EXPECT_THAT(proof0, ElementsAre(hash1, hash2));
 
     MerkleTree::Buffer root = ordered_tree.getRoot();
     EXPECT_EQ(root, calculated_root);
+    EXPECT_TRUE(MerkleTree::checkProofOrdered(proof0, root, hash0, 1));
 
     MerkleTree::Elements proof1 = ordered_tree.getProof(hash1);
     ASSERT_EQ(2u, proof1.size());
