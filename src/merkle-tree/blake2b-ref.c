@@ -201,6 +201,8 @@ static void blake2b_compress( blake2b_state *S, const uint8_t block[BLAKE2B_BLOC
   ROUND( 1 );
   ROUND( 2 );
   ROUND( 3 );
+  // XXX Only 4 rounds for satoshift
+#if 0
   ROUND( 4 );
   ROUND( 5 );
   ROUND( 6 );
@@ -209,6 +211,7 @@ static void blake2b_compress( blake2b_state *S, const uint8_t block[BLAKE2B_BLOC
   ROUND( 9 );
   ROUND( 10 );
   ROUND( 11 );
+#endif
 
   for( i = 0; i < 8; ++i ) {
     S->h[i] = S->h[i] ^ v[i] ^ v[i + 8];
