@@ -1,15 +1,16 @@
 cmake_minimum_required(VERSION 3.1)
-project(merkle-tree LANGUAGES CXX)
+project(merkle-tree LANGUAGES C CXX)
 enable_testing()
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
-find_package(CryptoPP)
 
 add_subdirectory(googletest)
 config_compiler_and_linker()
 
 add_library(merkle_tree STATIC
     include/merkle-tree/merkle-tree.hpp
-    src/merkle-tree/merkle-tree.cpp)
+    src/merkle-tree/merkle-tree.cpp
+    src/merkle-tree/blake2.h
+    src/merkle-tree/blake2b-ref.c)
 
 set_property(TARGET merkle_tree PROPERTY CXX_STANDARD 98)
 set_property(TARGET merkle_tree PROPERTY CXX_STANDARD_REQUIRED ON)
@@ -23,8 +24,6 @@ endif()
 
 target_include_directories(merkle_tree
     PUBLIC include)
-
-#target_link_libraries(merkle_tree XXX)
 
 add_executable(unit-tests test/test-merkle-tree.cpp)
 set_property(TARGET unit-tests PROPERTY CXX_STANDARD 98)

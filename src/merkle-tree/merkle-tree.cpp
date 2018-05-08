@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
+#include "blake2.h"
 
 std::ostream& operator<<(std::ostream& os, const MerkleTree::Buffer& buffer)
 {
