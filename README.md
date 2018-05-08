@@ -7,7 +7,7 @@ need to install that on your system
 To build on Linux:
 
 ```sh
-$ git clone https://github.com/fabricetriboix/merkle-tree.git
+$ git clone --recursive https://github.com/fabricetriboix/merkle-tree.git
 $ mkdir build
 $ cd build
 $ cmake -DCMAKE_BUILD_TYPE=Release ../merkle-tree
