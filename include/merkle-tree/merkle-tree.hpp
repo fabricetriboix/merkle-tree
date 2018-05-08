@@ -14,7 +14,7 @@ extern "C" {
  *
  * We are using Blake2b with an output of 128 bits, which is 16 bytes.
  */
-#define MERKLE_TREE_ELEMENT_SIZE 16
+#define MERKLE_TREE_ELEMENT_SIZE_B 16
 
 class MerkleTree
 {
@@ -22,9 +22,9 @@ public :
     /** Buffer type
      *
      * This represents a single hash in the Merkle Tree and must have a
-     * length of `MERKLE_TREE_ELEMENT_SIZE`.
+     * length of `MERKLE_TREE_ELEMENT_SIZE_B`.
      *
-     * \see MERKLE_TREE_ELEMENT_SIZE
+     * \see MERKLE_TREE_ELEMENT_SIZE_B
      */
     typedef std::vector<uint8_t> Buffer;
 
@@ -49,7 +49,7 @@ public :
      * \throw `std::runtime_error` if `elements` is empty
      *
      * \throw `std::runtime_error` if `elements` contains an element which is
-     *        not of the right size, \see MERKLE_TREE_ELEMENT_SIZE.
+     *        not of the right size, \see MERKLE_TREE_ELEMENT_SIZE_B.
      */
     MerkleTree(const Elements& elements, bool preserveOrder = false);
 
@@ -96,7 +96,7 @@ public :
      * \throw `std::runtime_error` if `elements` is empty
      *
      * \throw `std::runtime_error` if `elements` contains an element which is
-     *        not of the right size, \see MERKLE_TREE_ELEMENT_SIZE.
+     *        not of the right size, \see MERKLE_TREE_ELEMENT_SIZE_B.
      */
     static Buffer merkleRoot(const Elements& elements,
             bool preserveOrder = false);

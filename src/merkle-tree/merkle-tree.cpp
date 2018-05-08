@@ -27,10 +27,10 @@ MerkleTree::MerkleTree(const Elements& elements, bool preserveOrder)
         if (it->empty()) {
             continue; // ignore empty elements
         }
-        if (it->size() != MERKLE_TREE_ELEMENT_SIZE) {
+        if (it->size() != MERKLE_TREE_ELEMENT_SIZE_B) {
             std::ostringstream oss;
             oss << "Element size is " << it->size() << ", it must be "
-                << MERKLE_TREE_ELEMENT_SIZE;
+                << MERKLE_TREE_ELEMENT_SIZE_B;
             throw std::runtime_error(oss.str());
         }
         if (!preserveOrder_) {
@@ -57,7 +57,7 @@ MerkleTree::~MerkleTree()
 MerkleTree::Buffer MerkleTree::hash(const Buffer& data)
 {
     // TODO blake2b
-    Buffer result(MERKLE_TREE_ELEMENT_SIZE, 0);
+    Buffer result(MERKLE_TREE_ELEMENT_SIZE_B, 0);
     for (Buffer::const_iterator it = data.begin(); it != data.end(); ++it) {
         result[0] += *it;
     }

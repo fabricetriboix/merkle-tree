@@ -15,7 +15,7 @@ TEST(MerkleTreeUnordered, WrongSizeElementShouldThrow)
     MerkleTree::Elements elements;
 
     MerkleTree::Buffer element;
-    for (size_t i = 0; i < MERKLE_TREE_ELEMENT_SIZE; ++i) {
+    for (size_t i = 0; i < MERKLE_TREE_ELEMENT_SIZE_B; ++i) {
         element.push_back(i);
     }
     elements.push_back(element);
